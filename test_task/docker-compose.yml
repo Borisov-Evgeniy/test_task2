@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  web:
+    image: test_task
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+    environment:
+      - DJANGO_DB_ENGINE=django.db.backends.sqlite3
+      - DJANGO_DB_NAME=/code/db.sqlite3

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ item.name }}</title>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <h1>{{ item.name }}</h1>
+    <p>{{ item.description }} - ${{ item.price }}</p>
+
+    <label for="discountSelect">Select Discount:</label>
+    <select id="discountSelect">
+        {% for discount in discounts %}
+            <option value="{{ discount.id }}">{{ discount.name }} - {{ discount.percentage }}%</option>
+        {% endfor %}
+    </select>
+
+    <label for="taxSelect">Select Tax:</label>
+    <select id="taxSelect">
+        {% for tax in taxes %}
+            <option value="{{ tax.id }}">{{ tax.name }} - {{ tax.rate }}%</option>
+        {% endfor %}
+    </select>
+
+    <button id="buyButton">Buy</button>
+
+    <script>
+        var stripe = Stripe('api_key');
+
+        document.getElementById('buyButton').addEventListener('click', function () {
+            var discountId = document.getElementById('discountSelect').value;
+            var taxId = document.getElementById('taxSelect').value;
+
+            fetch("{{ session_id_url }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    discount_id: discountId,
+                    tax_id: taxId,
+                }),
+            })
+                .then(response => response.json())
+                .then(session => {
+                    return stripe.redirectToCheckout({ sessionId: session.session_id });
+                })
+                .then(result => {
+                    if (result.error) {
+                        alert(result.error.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+</body>
+</html>
